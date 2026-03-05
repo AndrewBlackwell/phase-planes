@@ -1,0 +1,218 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>(Better) Phase Plane Plotter</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body onLoad="initializeCanvas()">
+    <div class="container">
+      <div class="header">
+        <h1>(Better) Phase Plane Plotter</h1>
+        <div class="equations">
+          <div class="equation-input">
+            <label>dx/dt =</label>
+            <input id="xprime_id" type="text" size="20" value="y - a x" />
+          </div>
+          <div class="equation-input">
+            <label>dy/dt =</label>
+            <input id="yprime_id" type="text" size="20" value="sin x" />
+          </div>
+          <button onclick="draw()">Graph</button>
+        </div>
+      </div>
+
+      <div class="controls-top">
+        <div class="control-section">
+          <label>X:</label>
+          <input id="xmin_id" type="text" size="3" value="-5" />
+          <label>to</label>
+          <input id="xmax_id" type="text" size="3" value="5" />
+          <label>Y:</label>
+          <input id="ymin_id" type="text" size="3" value="-5" />
+          <label>to</label>
+          <input id="ymax_id" type="text" size="3" value="5" />
+          <button onclick="zoomIn()">Zoom In</button>
+          <button onclick="zoomOut()">Zoom Out</button>
+        </div>
+
+        <div class="control-section">
+          <label>Arrows:</label>
+          <input id="arrownumber_id" type="text" size="3" value="20" />
+          <button class="small-button" onclick="moreArrows()">+</button>
+          <button class="small-button" onclick="fewerArrows()">−</button>
+          <label>Len:</label>
+          <input id="arrow_id" type="text" size="3" value="10" />
+          <button class="small-button" onclick="longerArrows()">+</button>
+          <button class="small-button" onclick="shorterArrows()">−</button>
+        </div>
+
+        <div class="control-section">
+          <label
+            ><input
+              type="checkbox"
+              id="variableArrows"
+              unchecked
+            />Variable</label
+          >
+          <label
+            ><input type="checkbox" id="manyArrows" unchecked />Color</label
+          >
+        </div>
+
+        <div class="control-section">
+          <label>T:</label>
+          <input id="tmin_id" type="text" size="3" value="-8" />
+          <label>to</label>
+          <input id="tmax_id" type="text" size="3" value="8" />
+          <label>T0:</label>
+          <input id="tO_id" type="text" size="3" value="0" />
+          <button class="small-button" onclick="plusT()">+</button>
+          <button class="small-button" onclick="minusT()">−</button>
+        </div>
+
+        <div class="control-section">
+          <label>a =</label>
+          <input
+            id="param_a_id"
+            type="text"
+            size="4"
+            value="1"
+            oninput="syncParamSlider()"
+          />
+          <input
+            id="param_a_slider"
+            type="range"
+            min="-5"
+            max="5"
+            step="0.1"
+            value="1"
+            oninput="syncParamInput()"
+          />
+          <label>Range:</label>
+          <input
+            id="param_a_min"
+            type="text"
+            size="3"
+            value="-5"
+            oninput="updateParamRange()"
+          />
+          <label>to</label>
+          <input
+            id="param_a_max"
+            type="text"
+            size="3"
+            value="5"
+            oninput="updateParamRange()"
+          />
+        </div>
+
+        <div class="control-section">
+          <label>Width:</label>
+          <input id="linewidth_id" type="text" size="2" value="3" />
+          <button class="small-button" onclick="pluslinewidth()">+</button>
+          <button class="small-button" onclick="minuslinewidth()">−</button>
+          <label>Color:</label>
+          <input
+            id="hue_id"
+            type="range"
+            min="0"
+            max="360"
+            value="270"
+            oninput="updateHuePreview()"
+          />
+          <span class="hue-preview" id="hue-preview"></span>
+        </div>
+
+        <div class="control-section">
+          <label>Traces:</label>
+          <input id="autopopulate_count" type="text" size="2" value="25" />
+          <button onclick="autopopulate()">Autopopulate</button>
+          <label
+            ><input type="checkbox" id="auto_on_slide" checked />On slide</label
+          >
+        </div>
+      </div>
+
+      <div class="main-area">
+        <div class="canvas-wrapper">
+          <table cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td>
+                <canvas
+                  id="yAxisCanvas"
+                  width="40"
+                  height="650"
+                  class="axis-canvas"
+                ></canvas>
+              </td>
+              <td>
+                <canvas id="myCanvas" width="650" height="650"></canvas>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <canvas
+                  id="spacerCanvas"
+                  width="40"
+                  height="35"
+                  class="axis-canvas"
+                ></canvas>
+              </td>
+              <td>
+                <canvas
+                  id="xAxisCanvas"
+                  width="650"
+                  height="35"
+                  class="axis-canvas"
+                ></canvas>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="info-panel">
+          <h3>Usage</h3>
+          <ul>
+            <li>
+              <strong>a</strong> is a parameter variable for bifurcation
+              analysis
+            </li>
+            <li>Implicit multiplication: <code>2x</code> = <code>2*x</code></li>
+            <li>
+              Functions: <code>sin</code>, <code>cos</code>, <code>tan</code>,
+              <code>exp</code>, <code>log</code>, <code>sqrt</code>,
+              <code>abs</code>
+            </li>
+            <li>Powers: <code>x^2</code> or <code>x**2</code></li>
+            <li>Click canvas to trace individual paths</li>
+            <li>
+              <strong>On slide</strong>: auto-redraw when dragging <em>a</em>
+            </li>
+          </ul>
+
+          <h3>License</h3>
+          <p>
+            Adapted from
+            <a href="https://aeb019.hosted.uark.edu/pplane.html" target="_blank"
+              >pplane.html</a
+            >
+            by Ariel Barton (University of Arkansas).
+          </p>
+          <p>
+            Provided without warranty. Free for personal/educational use.
+            Generated images licensed under
+            <a
+              href="http://creativecommons.org/licenses/by/4.0/"
+              target="_blank"
+              >CC BY 4.0</a
+            >.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script src="math.js"></script>
+  </body>
+</html>
